@@ -34,8 +34,12 @@ To use the services module, first import it in your app:
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ServicesModule } from 'ng2-message-service';
+import { AppComponent } from './app.component';
 
 @NgModule({
+    declarations: [
+        AppComponent
+    ],
     imports: [
         BrowserModule,
         ServicesModule
