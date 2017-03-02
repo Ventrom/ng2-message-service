@@ -12,6 +12,7 @@ export class ChatService {
     group: Group
     groups: Group[] = []
     sender: Sender
+    debug: boolean = false
 
     constructor(
         private messageService: MessageService,
@@ -27,13 +28,13 @@ export class ChatService {
 
     messageCallback (message: string, remote: any) {
         let response = JSON.parse(message)
-        console.log('Received message from: ' + remote.address + ':' + remote.port +' - ' + response)
+        if (this.debug) console.log('Received message from: ' + remote.address + ' on port: ' + remote.port +' - message: ' + response.value)
 
         // When we receive the message, process the message according to the type
         switch(response.type) {
             // A sender is joining a group
             case 'join':
-                console.log(this.groups)
+                if (this.debug) console.log('All groups registered so far: %s', JSON.stringify(this.groups))
                 let jgroup: Group = this.groups.find((g) => { return g._id === response.target })
 
                 // Test if we already have this group
@@ -50,8 +51,7 @@ export class ChatService {
                     }
                 }
 
-                console.log('The group to join')
-                console.log(jgroup)
+                if (this.debug) console.log('The group being joined: %s', JSON.stringify(jgroup))
 
                 if (jgroup) {
                     // If the sender joining a group is me, change the current group
@@ -71,6 +71,12 @@ export class ChatService {
                     } else {
                         // If we are in the same group
                         if (this.group._id === response.target) {
+                            // If this is another instance running in the same machine, add the new port so we can
+                            // communicate
+                            if (response.port && this.socketService.getConfig().MULTICAST_PORTS.indexOf(response.port) === -1) {
+                                this.socketService.getConfig().MULTICAST_PORTS.push(response.port)
+                            }
+
                             // The new sender doesn't know about members already in this group so notify the other
                             // groups about me as a member already being in this group
                             this.messageService.sendMessage({
@@ -83,16 +89,18 @@ export class ChatService {
                 }
                 break
             // In case we need to update the members with missing ones due to the order they join a group. This
-            // is needed when a second member join an existing group and doesn't know about the first member who
-            // joined
+            // is needed when a second member join an existing group and doesn't know about the first one
             case 'update':
                 let ugroup: Group = this.groups.find((g) => { return g._id === response.target })
+
+                if (this.debug) console.log('Updating group: %s', JSON.stringify(ugroup))
 
                 if (ugroup) {
                     if (this.sender._id !== response.sender) {
                         // If we are in the same group
                         if (this.group._id === response.target) {
                             if (!ugroup.senders.find((u) => { return u._id === response.sender })) {
+                                if (this.debug) console.log('Registering missing member: ' + response.sender)
                                 ugroup.senders.push(response.sender)
                             }
                         }
@@ -105,6 +113,7 @@ export class ChatService {
                 if (response.all) {
                     // If the person receiving is in the same group as the sender
                     if (this.group && this.group._id === response.target) {
+                        if (this.debug) console.log('All members in this group: ' + this.group._id + ' were notified with the message')
                         this.messageService.notify(response)
                     }
                 // If the message was meant for someone specific
@@ -112,16 +121,14 @@ export class ChatService {
                     // If the message was sent directly to me
                     if (this.sender._id === response.target) {
                         //TODO
+                        if (this.debug) console.log('I was notified with a message in this group: ' + this.group._id)
                         this.messageService.notify(response)
                     }
                 }
                 break
             case 'leave':
-                console.log('Leaving group: ')
-                console.log(response.target)
+                if (this.debug) console.log('Leaving group: ' + response.target)
                 let groupi: number = this.groups.findIndex((g) => { return g._id === response.target })
-                console.log('Leaving group with index: ')
-                console.log(groupi)
 
                 // If we have a group to leave
                 if (groupi !== -1) {
@@ -156,9 +163,9 @@ export class ChatService {
         let joinm: Message = {
             type: 'join',
             sender: this.sender._id,
-            target: name
+            target: name,
+            port: this.socketService.getConfig().MULTICAST_PORTS[0]
         }
-        console.log(joinm)
         this.messageService.broadcastMessage(JSON.stringify(joinm))
     }
 
@@ -194,4 +201,3 @@ export class ChatService {
         return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
     }
 }
-

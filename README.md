@@ -19,7 +19,7 @@ https://Ventrom.github.io/Ventrom/ng2-message-service/demo/
 
 ## About
 
-A message service for angular2 projects
+An Electron project to exchange messages in a local network environment using udp.
 
 ## Installation
 
@@ -28,28 +28,82 @@ Install through npm:
 npm install --save ng2-message-service
 ```
 
-Then use it in your app like so:
+To use the services module, first import it in your app:
 
 ```typescript
-import {Component} from '@angular/core';
-import {HelloWorld} from 'ng2-message-service';
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { ServicesModule } from 'ng2-message-service';
 
-@Component({
-  selector: 'demo-app',
-  directives: [HelloWorld],
-  template: '<hello-world></hello-world>'
+@NgModule({
+    imports: [
+        BrowserModule,
+        ServicesModule
+    ],
+    declarations: [],
+    bootstrap:    [ AppComponent ]
 })
-export class DemoApp {}
+export class AppModule {}
 ```
 
-You may also find it useful to view the [demo source](https://github.com/Ventrom/Ventrom/ng2-message-service/blob/master/demo/demo.ts).
+Then you can call individual services inside a component, for example:
 
-### Usage without a module bundler
-```
-<script src="node_modules/dist/umd/ng2-message-service/ng2-message-service.js"></script>
-<script>
-    // everything is exported MessageService namespace
-</script>
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { ChatService, MessageService, Group, Sender } from '@zaknarfen/ng2-message-service'
+import { Subscription } from 'rxjs'
+
+export class DashboardComponent implements OnInit {
+    sender: Sender
+    group: Group
+    messageSub: Subscription
+    groupSub: Subscription
+
+    constructor(
+        private chatService: ChatService,
+        private messageService: MessageService
+    ) {}
+
+    ngOnInit() {
+        let self = this
+
+        this.sender = this.chatService.createMessageSender()
+        this.messageSub = this.messageService.messageConfirmed$.subscribe(message => {
+            // Do something with the message. The message can be added to an array of
+            // string and displayed on a textarea to represent a chat, for instance
+        })
+
+        this.groupSub = this.chatService.groupConfirmed$.subscribe(group => {
+            // Do something with the group. The group can be saved on a variable and used
+            // to represent joining or leaving a chat room, for instance
+        })
+    }
+
+    // An example method to send a text message assuming the sender has a group already and
+    // that the value (text) is always the same. A common way to use this would be to get
+    // the value from an input text and bind this method to a button click
+    sendMessage(target?: string, all?: boolean) {
+        // If this component was using only the message service, the send message could be called directly
+        this.messageService.sendMessage({
+            type: 'info',
+            // This value could be used from an input text element in your template
+            value: 'Hello world!',
+            sender: this.sender._id,
+            // Send to the current group by default if not specified
+            target: (target) ? target : this.group._id,
+            // Mark all as receivers by default if not specified
+            all: (all) ? all : true
+        })
+    }
+
+    joinGroup() {
+        this.chatService.joinGroup('A GROUP NAME')
+    }
+
+    leaveGroup() {
+        this.chatService.leaveGroup()
+    }
+}
 ```
 
 ## Documentation
@@ -61,18 +115,6 @@ https://Ventrom.github.io/Ventrom/ng2-message-service/docs/
 ### Prepare your environment
 * Install [Node.js](http://nodejs.org/) and NPM (should come with)
 * Install local dev dependencies: `npm install` while current directory is this repo
-
-### Development server
-Run `npm start` to start a development server on port 8000 with auto reload + tests.
-
-### Testing
-Run `npm test` to run tests once or `npm run test:watch` to continually run tests.
-
-### Release
-* Bump the version in package.json (once the module hits 1.0 this will become automatic)
-```bash
-npm run release
-```
 
 ## License
 

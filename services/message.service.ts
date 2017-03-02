@@ -8,6 +8,7 @@ import { Message } from './chat.interface'
 export class MessageService {
     private messageSource: Subject<Message> = new Subject<Message>()
     messageConfirmed$ = this.messageSource.asObservable()
+    debug: boolean = false
 
     constructor(
         private socketService: SocketService
@@ -22,20 +23,21 @@ export class MessageService {
     }
 
     sendMessage(message: Message) {
-        console.log('Sending a message to a group:')
-        console.log(message)
+        if (this.debug) console.log('Broadcastring message to a group: %s', JSON.stringify(message))
         this.broadcastMessage(JSON.stringify(message))
     }
 
     broadcastMessage(jsonm: string) {
         let socket = this.socketService.getSocket()
         let config = this.socketService.getConfig()
-        socket.send(jsonm, 0, jsonm.length, config.MULTICAST_PORT, config.HOST, function(err: any, bytes: any) {
-            if (err) {
-                console.log('An error happened while sending the message:')
-                console.log(err)
-                socket.close()
-            }
+        config.MULTICAST_PORTS.forEach((p) => {
+            socket.send(jsonm, 0, jsonm.length, p, config.HOST, function(err: any, bytes: any) {
+                if (err) {
+                    console.log('An error happened while sending the message:')
+                    console.log(err)
+                    socket.close()
+                }
+            })
         })
     }
 

@@ -1,7 +1,7 @@
 export interface SocketConfig {
     HOST: string
     PORT: number
-    MULTICAST_PORT: number
+    MULTICAST_PORTS: number[]
     broadcast: boolean
     multicastTTL: number
 }
@@ -27,4 +27,5 @@ export interface Message {
     sender?: string
     target: string
     all?: boolean
+    port?: number
 }

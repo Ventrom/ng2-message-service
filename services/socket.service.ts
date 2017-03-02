@@ -1,24 +1,29 @@
-import { Injectable } from '@angular/core'
+import { Injectable, OnInit } from '@angular/core'
 import { SocketConfig, SocketCallback } from './chat.interface'
-//import { Socket } from 'dgram'
+import { Socket } from 'dgram'
 import { Observable } from 'rxjs/observable'
 
-//const dgram = require('dgram')
-import * as dgram from 'dgram'
+var dgram = require('dgram')
+var udpFinder = require('udp-finder')
 
 @Injectable()
-export class SocketService {
-    private socket: dgram.Socket
+export class SocketService implements OnInit {
+    private socket: any
     private defaultConfig: SocketConfig = {
         HOST: '239.255.22.79',
         PORT: 8000,
-        MULTICAST_PORT: 5554,
+        MULTICAST_PORTS: [5554],
         broadcast: true,
         multicastTTL: 128
     }
     private config: SocketConfig
+    debug: boolean = false
 
     constructor() {}
+
+    ngOnInit() {
+        //this.dgram = require('dgram')
+    }
 
     // Chat and message services are able to create sockets on their own
     createSocket(loadDefault?: boolean) {
@@ -37,7 +42,7 @@ export class SocketService {
         return this.socket
     }
 
-    setSocket(socket: dgram.Socket) {
+    setSocket(socket: any) {
         this.socket = socket
     }
 
@@ -69,7 +74,16 @@ export class SocketService {
             if (port) {
                 this.socket.bind(port)
             } else {
-                this.socket.bind(this.config.MULTICAST_PORT)
+                let self = this
+                // Start using the default port for this socket, then search for the first free
+                // port that we can use
+                udpFinder.getPort(this.config.MULTICAST_PORTS[0], function(err, port){
+                    // The first available port is 'port'
+                    if (port !== self.config.MULTICAST_PORTS[0])
+                    // Keeps the port used in the binding as the first number in the array
+                    self.config.MULTICAST_PORTS.unshift(port)
+                    self.socket.bind({port: port, address: '0.0.0.0', exclusive: false})
+                })
             }
         }
     }
@@ -77,7 +91,7 @@ export class SocketService {
     // A default callback method to be used as a socket listen callback
     listeningCallback() {
         let address = this.socket.address()
-        console.log('UDP Client listening on ' + address.address + ':' + address.port)
+        if (this.debug) console.log('UDP Client listening on ' + address.address + ':' + address.port)
         this.socket.setBroadcast(true)
         this.socket.setMulticastTTL(128)
         this.socket.addMembership(this.config.HOST)
