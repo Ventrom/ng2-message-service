@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChatService } from './services/chat.service';
-import { MessageService } from './services/message.service';
-import { SocketService } from './services/socket.service';
+import { ChatService } from './src/chat.service';
+import { MessageService } from './src/message.service';
+import { SocketService } from './src/socket.service';
 
 @NgModule({
   declarations: [],

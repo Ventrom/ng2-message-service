@@ -1,21 +1,21 @@
 {
   "name": "ng2-message-service",
-  "version": "2.1.3",
+  "version": "1.0.0",
   "description": "An Electron project to exchange messages in a local network environment using udp.",
   "main": "index.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Ventrom/Ventrom/ng2-message-service.git"
+    "url": "git+https://github.com/Ventrom/ng2-message-service.git"
   },
   "keywords": [
-    "angular2"
+    "angular electron"
   ],
   "author": "Ventrom LLC",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Ventrom/Ventrom/ng2-message-service/issues"
+    "url": "https://github.com/Ventrom/ng2-message-service/issues"
   },
-  "homepage": "https://github.com/Ventrom/Ventrom/ng2-message-service#readme",
+  "homepage": "https://github.com/Ventrom/ng2-message-service#readme",
   "dependencies": {
     "@angular/common": "^2.4.4",
     "@angular/core": "^2.4.4",

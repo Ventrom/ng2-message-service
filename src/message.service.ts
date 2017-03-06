@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import { Subject } from 'rxjs/Subject'
 import { Observable } from 'rxjs/Observable'
 import { SocketService } from './socket.service'
-import { Message } from './chat.interface'
+import { Message } from './message.interface'
 
 @Injectable()
 export class MessageService {

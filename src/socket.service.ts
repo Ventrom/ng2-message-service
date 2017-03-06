@@ -1,5 +1,5 @@
-import { Injectable, OnInit } from '@angular/core'
-import { SocketConfig, SocketCallback } from './chat.interface'
+import { Injectable } from '@angular/core'
+import { SocketConfig, SocketCallback } from './message.interface'
 import { Socket } from 'dgram'
 import { Observable } from 'rxjs/observable'
 
@@ -7,7 +7,7 @@ var dgram = require('dgram')
 var udpFinder = require('udp-finder')
 
 @Injectable()
-export class SocketService implements OnInit {
+export class SocketService {
     private socket: any
     private defaultConfig: SocketConfig = {
         HOST: '239.255.22.79',
@@ -20,10 +20,6 @@ export class SocketService implements OnInit {
     debug: boolean = false
 
     constructor() {}
-
-    ngOnInit() {
-        //this.dgram = require('dgram')
-    }
 
     // Chat and message services are able to create sockets on their own
     createSocket(loadDefault?: boolean) {

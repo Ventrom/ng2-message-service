@@ -3,7 +3,7 @@ import { Subject } from 'rxjs/Subject'
 import { Observable } from 'rxjs/Observable'
 import { MessageService } from './message.service'
 import { SocketService } from './socket.service'
-import { Group, Sender, Message } from './chat.interface'
+import { Group, Sender, Message } from './message.interface'
 
 @Injectable()
 export class ChatService {
